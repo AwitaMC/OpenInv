@@ -1,0 +1,30 @@
+name: Dependabot Auto-merge
+
+on:
+  workflow_run:
+    workflows: [ Build ]
+    types: [ completed ]
+    branches: [ dependabot/maven/** ]
+
+jobs:
+  merge-dependabot:
+    name: Auto-merge Dependabot PRs
+    if: github.event.workflow_run.event == 'pull_request_target' && github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - id: dependabot-metadata
+        uses: dependabot/fetch-metadata@v1
+
+      - if: steps.dependabot-metadata.outputs.package-ecosystem == 'maven'
+        name: Auto approve
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      - if: steps.dependabot-metadata.outputs.package-ecosystem == 'maven'
+        name: Enable auto-merge
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
