@@ -16,8 +16,12 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Install Spigot Dependencies
-        run: . scripts/install_spigot_dependencies.sh
+      - name: Get Spigot Versions
+        run: echo "SPIGOT_VERSIONS=$(. ./scripts/get_spigot_versions_pretty.sh)" >> "$GITHUB_ENV"
+
+      - uses: SpraxDev/Action-SpigotMC@v4.0.0
+        with:
+          versions: ${{ env.SPIGOT_VERSIONS }}
 
       - name: Build With Maven
         run: mvn -e clean package -am -P all

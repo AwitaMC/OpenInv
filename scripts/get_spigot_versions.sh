@@ -35,9 +35,16 @@ old_maven_opts=$MAVEN_OPTS
 # Add JVM parameters to allow help plugin access to packages it needs.
 export MAVEN_OPTS="$old_maven_opts --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED"
 
+# Ensure UTF-8 for grep pattern matching
+old_locale=$LC_ALL
+export LC_ALL="C.UTF-8"
+
 # Pull Spigot dependency information from Maven.
 # Since we only care about Spigot versions, only check modules in the folder internal.
 readarray -t modules <<< "$(mvn help:evaluate -Dexpression=project.modules -q -DforceStdout -P all | grep -oP '(?<=<string>)(internal/.*)(?=</string>)')"
+
+# Reset locale
+export LC_ALL=$old_locale
 
 declare -n versions="spigot_versions"
 

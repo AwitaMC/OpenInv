@@ -12,13 +12,7 @@ jobs:
     if: github.event.workflow_run.event == 'push' && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch History for Changelog
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Set Release Variables
-        run: bash ./scripts/set_release_env.sh
+      - uses: actions/checkout@v3
 
       - name: Download Artifact
         uses: actions/github-script@v6
@@ -44,6 +38,12 @@ jobs:
       - name: 'Unzip artifact'
         run: unzip dist.zip
 
+      - name: Set Release Variables
+        run: |
+          echo "VERSIONED_NAME=$(mvn -q -Dexec.executable=echo -Dexec.args='${project.name} ${project.version}' --non-recursive exec:exec)" >> "$GITHUB_ENV"
+          versions_note=$(printf "## Supported Minecraft versions\n%s\n\n" "$(. ./scripts/get_pretty_spigot_versions.sh)")
+          printf "MINECRAFT_VERSIONS_NOTE<<EOF\n%s\nEOF\n" "$versions_note" >> "$GITHUB_ENV"
+
       - name: Create Release
         id: create-release
         uses: softprops/action-gh-release@v0.1.14
@@ -51,7 +51,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: ${{ env.VERSIONED_NAME }}
-          body: ${{ env.GENERATED_CHANGELOG }}
+          body: ${{ env.MINECRAFT_VERSIONS_NOTE }}
           draft: true
           prerelease: false
           files: OpenInv.jar

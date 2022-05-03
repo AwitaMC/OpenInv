@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2011-2021 lishid. All rights reserved.
+# Copyright (C) 2011-2022 lishid. All rights reserved.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,15 +18,12 @@
 # Note that this script is designed for use in GitHub Actions, and is not
 # particularly robust nor configurable. Run from project parent directory.
 
-# Get a pretty string of the project's name and version
-# Disable SC warning about variable expansion for this function - those are Maven variables.
-# shellcheck disable=SC2016
-function get_versioned_name() {
-  mvn -q -Dexec.executable=echo -Dexec.args='${project.name} ${project.version}' --non-recursive exec:exec
-}
+# Get a pretty list of supported Minecraft versions
+readarray -t versions <<< "$(. ./scripts/get_spigot_versions.sh)"
 
-# Set GitHub environmental variables
-echo "VERSIONED_NAME=$(get_versioned_name)" >> "$GITHUB_ENV"
+for version in "${versions[@]}"; do
+  # Append comma if variable is set, then append version
+  minecraft_versions="${minecraft_versions:+${minecraft_versions}, }${version%%-R*}"
+done
 
-changelog="$(. ./scripts/generate_changelog.sh)"
-printf "GENERATED_CHANGELOG<<EOF\n%s\nEOF\n" "$changelog" >> "$GITHUB_ENV"
+echo "${minecraft_versions}"
