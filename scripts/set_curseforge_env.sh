@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2011-2021 lishid. All rights reserved.
+# Copyright (C) 2011-2022 lishid. All rights reserved.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ function get_curseforge_minecraft_versions() {
   readarray -t versions <<< "$(. ./scripts/get_spigot_versions.sh)"
 
   for version in "${versions[@]}"; do
-    # Parse Minecraft major version
+    # Parse Minecraft major version - CurseForge is unreliable about adding new minor versions.
     version="${version%[.-]"${version#*.*[.-]}"}"
 
     # Skip already listed versions
@@ -31,8 +31,8 @@ function get_curseforge_minecraft_versions() {
       continue
     fi
 
-    # Append comma if variable is set, then append version
-    minecraft_versions="${minecraft_versions:+${minecraft_versions},}Minecraft ${version}"
+    # Append comma if variable is set, then append new version with Bukkit ID.
+    minecraft_versions="${minecraft_versions:+${minecraft_versions},}1:${version}"
   done
 
   echo "${minecraft_versions}"
